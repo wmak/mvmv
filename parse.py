@@ -1,6 +1,6 @@
 import codecs
-import sqlite3
 import re
+import sqlite3
 
 # Setup the sqlite database
 print("starting")
@@ -11,7 +11,7 @@ print("creating table")
 c.execute("CREATE VIRTUAL TABLE movies USING fts4(name, year)")
 
 # Open the movies list
-f = codecs.open("movies.list", encoding="utf-8", errors="ignore")
+f = codecs.open("movies.list", encoding="utf-8", errors="replace")
 lines = f.readlines()[15:-1] # skip the header
 
 print("Starting insertion into datbase")
