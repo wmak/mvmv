@@ -9,12 +9,13 @@ def search(query):
         "Them",
         "A",
         "An",
+        "In",
         ]
 
     blacklist = [
         "BluRay",
         "\d{3,4}p",
-        "(HD|DVD)Rip",
+        "(BR|HD|DVD)Rip",
         "x\d{3}",
         "XViD",
         ]
@@ -36,7 +37,7 @@ def search(query):
     # Find the first relevant word
     word = ""
     for item in query.split(" "):
-        if item not in common_words:
+        if item not in common_words and len(item) > 3:
             word = item
             break
 
