@@ -13,19 +13,20 @@ def search(query):
 
     blacklist = [
         "BluRay",
-        "1080p",
-        "720p",
-        "HDRip",
-        "x264",
-        "DVDRip",
+        "\d{3,4}p",
+        "(HD|DVD)Rip",
+        "x\d{3}",
+        "XViD",
         ]
 
     # Setup the sqlite database
     conn = sqlite3.connect("movies.db")
     c = conn.cursor()
     query = query.replace(".", " ")
-    for term in blacklist:
-        query.replace(term, "")
+
+    # remove all instancer of 'WORD ' for WORD in blacklist
+    bl_re = re.compile("(" + "|".join(blacklist) + ")(\s|$)", re.IGNORECASE)
+    query = bl_re.sub("", query)
 
     m = re.search("(\d{4})", query)
     for match in m.groups():
@@ -39,7 +40,7 @@ def search(query):
             word = item
             break
 
-    c.execute("SELECT * FROM movies WHERE movies MATCH ?", 
+    c.execute("SELECT * FROM movies WHERE movies MATCH ?",
             ["%s %s" % (word, year)])
 
     ratio = 0
