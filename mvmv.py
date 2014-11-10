@@ -37,7 +37,7 @@ def search(query, cursor):
     word = ""
     for item in query.split(" "):
         if item not in common_words and len(item) > 3:
-            word = item
+            word = item.replace("-", " ")
             break
 
     cursor.execute("SELECT * FROM movies WHERE movies MATCH ?",
