@@ -24,11 +24,8 @@ blacklist = [
 # compile the blacklist into a regex
 bl_re = re.compile("(" + "|".join(blacklist) + ")(\s|$)", re.IGNORECASE)
 
-conn = sqlite3.connect("movies.db")
-c = conn.cursor()
-
 # Setup the sqlite database
-def search(query):
+def search(query, cursor):
     # remove all instancer of 'WORD ' for WORD in blacklist
     query = query.replace(".", " ")
     query = bl_re.sub("", query)
@@ -42,12 +39,12 @@ def search(query):
             word = item
             break
 
-    c.execute("SELECT * FROM movies WHERE movies MATCH ?",
+    cursor.execute("SELECT * FROM movies WHERE movies MATCH ?",
             ["%s %s" % (word, year)])
 
     ratio = 0
     best = query
-    for item in c:
+    for item in cursor:
         current = fuzz.ratio(item[0], query)
         for word in item[0].split():
             if word not in query:
@@ -61,6 +58,10 @@ def search(query):
     return best
 
 if __name__ == "__main__":
+    conn = sqlite3.connect("movies.db")
+    cursor = conn.cursor()
+
     import sys
     print(search(sys.argv[0]))
-    conn.close
+
+    conn.close()
