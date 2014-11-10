@@ -16,9 +16,10 @@ common_words = [
 blacklist = [
             "BluRay",
             "\d{3,4}p",
-            "(HD|DVD)Rip",
+            "(HD|DVD|BR)Rip",
             "x\d{3}",
             "XViD(-.*)?",
+            "AC3-EVO",
             ]
 
 # compile the blacklist into a regex
@@ -43,7 +44,7 @@ def search(query, cursor):
             ["%s %s" % (word, year)])
 
     ratio = 0
-    best = query
+    best = query.replace(year, "").strip()
     for item in cursor:
         current = fuzz.ratio(item[0], query)
         for word in item[0].split():
