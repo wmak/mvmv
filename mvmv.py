@@ -1,7 +1,6 @@
 import codecs
 import sqlite3
 import re
-import sys
 from fuzzywuzzy import fuzz
 
 def search(query):
@@ -10,7 +9,6 @@ def search(query):
         "x264",
         "1080p",
         ]
-
 
     # Setup the sqlite database
     conn = sqlite3.connect("movies.db")
@@ -22,7 +20,7 @@ def search(query):
     m = re.search("(\d{4})", query)
     for match in m.groups():
         if match != "1080":
-            return match
+            year = match
 
     c.execute("SELECT * FROM movies WHERE year=?", [year])
 
@@ -34,3 +32,7 @@ def search(query):
             ratio = current
             best = item[0]
     return best
+
+if __name__ == "__main__":
+    import sys
+    print(search(sys.argv[0]))
