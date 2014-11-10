@@ -46,6 +46,9 @@ def search(query):
     best = query
     for item in c:
         current = fuzz.ratio(item[0], query)
+        for word in item[0].split():
+            if word not in query:
+                current -= 10
         if item[0] in query and len(item[0].split()) > 1:
             ratio = 100
             best = item[0]
