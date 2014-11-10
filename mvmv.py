@@ -32,10 +32,7 @@ def search(query):
     query = query.replace(".", " ")
     query = bl_re.sub("", query)
 
-    m = re.search("(\d{4})", query)
-    for match in m.groups():
-        if match != "1080":
-            year = match
+    year = re.search("(19|20)\d{2}", query).group(0)
 
     # Find the first relevant word
     word = ""
