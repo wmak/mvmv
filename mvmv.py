@@ -3,36 +3,37 @@ import sqlite3
 import re
 from fuzzywuzzy import fuzz
 
+# common words in movies that we don't want to search the database for
+common_words = [
+            "The",
+            "Them",
+            "A",
+            "An",
+            "In",
+            ]
+
+# blacklist of common garbage that fills up movie names
+blacklist = [
+            "BluRay",
+            "\d{3,4}p",
+            "(HD|DVD)Rip",
+            "x\d{3}",
+            "XViD(-.*)?",
+            ]
+
+# compile the blacklist into a regex
+bl_re = re.compile("(" + "|".join(blacklist) + ")(\s|$)", re.IGNORECASE)
+
+conn = sqlite3.connect("movies.db")
+c = conn.cursor()
+
+# Setup the sqlite database
 def search(query):
-    common_words = [
-        "The",
-        "Them",
-        "A",
-        "An",
-        "In",
-        ]
-
-    blacklist = [
-        "BluRay",
-        "\d{3,4}p",
-        "(BR|HD|DVD)Rip",
-        "x\d{3}",
-        "XViD",
-        ]
-
-    # Setup the sqlite database
-    conn = sqlite3.connect("movies.db")
-    c = conn.cursor()
-    query = query.replace(".", " ")
-
     # remove all instancer of 'WORD ' for WORD in blacklist
-    bl_re = re.compile("(" + "|".join(blacklist) + ")(\s|$)", re.IGNORECASE)
+    query = query.replace(".", " ")
     query = bl_re.sub("", query)
 
-    m = re.search("(\d{4})", query)
-    for match in m.groups():
-        if match != "1080":
-            year = match
+    year = re.search("(19|20)\d{2}", query).group(0)
 
     # Find the first relevant word
     word = ""
@@ -62,3 +63,4 @@ def search(query):
 if __name__ == "__main__":
     import sys
     print(search(sys.argv[0]))
+    conn.close
