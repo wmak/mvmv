@@ -1,6 +1,8 @@
+import os
 import codecs
 import sqlite3
 import re
+import mimetypes
 from fuzzywuzzy import fuzz
 
 # common words in movies that we don't want to search the database for
@@ -57,6 +59,20 @@ def search(query, cursor):
             ratio = current
             best = item[0]
     return best
+
+def get_movies_list(dirname, *excludes):
+    excludes = [re.compile(exc) for exc in excludes]
+
+    movies = []
+    for root, _, files in os.walk(dirname):
+        if any(map(lambda x: x.match(root), excludes)):
+            continue
+
+        for movie in files:
+            if str(mimetypes.guess_type(movie)[0]).find('video/') == 0 and \
+                    not any(map(lambda x: x.match(movie), excludes)):
+                movies.append((root, movie))
+    return movies
 
 if __name__ == "__main__":
     conn = sqlite3.connect("movies.db")
