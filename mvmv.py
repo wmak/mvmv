@@ -60,14 +60,17 @@ def search(query, cursor):
             best = item[0]
     return best
 
-def get_movies_list(dirname, excludes=None):
-    if not excludes:
-        excludes = []
+def get_movies_list(dirname, *excludes):
+    excludes = [re.compile(exc) for exc in excludes]
 
     movies = []
     for root, _, files in os.walk(dirname):
+        if any(map(lambda x: x.match(root), excludes)):
+            continue
+
         for movie in files:
-            if str(mimetypes.guess_type(movie)[0]).find('video/') == 0:
+            if str(mimetypes.guess_type(movie)[0]).find('video/') == 0 and \
+                    not any(map(lambda x: x.match(movie), excludes)):
                 movies.append((root, movie))
     return movies
 
