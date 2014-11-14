@@ -37,7 +37,7 @@ class Daemon(object):
     """
     def __init__(self, pidfile, stdin=os.devnull,
                  stdout=os.devnull, stderr=os.devnull,
-                 home_dir='.', umask=022, verbose=1):
+                 home_dir='.', umask=0o22, verbose=1):
         self.stdin = stdin
         self.stdout = stdout
         self.stderr = stderr
@@ -58,7 +58,7 @@ class Daemon(object):
             if pid > 0:
                 # Exit first parent
                 sys.exit(0)
-        except OSError, e:
+        except OSError as e:
             sys.stderr.write(
                 "fork #1 failed: %d (%s)\n" % (e.errno, e.strerror))
             sys.exit(1)
@@ -74,7 +74,7 @@ class Daemon(object):
             if pid > 0:
                 # Exit from second parent
                 sys.exit(0)
-        except OSError, e:
+        except OSError as e:
             sys.stderr.write(
                 "fork #2 failed: %d (%s)\n" % (e.errno, e.strerror))
             sys.exit(1)
@@ -99,7 +99,7 @@ class Daemon(object):
             signal.signal(signal.SIGINT, sigtermhandler)
 
         if self.verbose >= 1:
-            print "Started"
+            print("Started")
 
         # Write pidfile
         atexit.register(
@@ -116,7 +116,7 @@ class Daemon(object):
         """
 
         if self.verbose >= 1:
-            print "Starting..."
+            print("Starting...")
 
         # Check for a pidfile to see if the daemon already runs
         try:
@@ -143,7 +143,7 @@ class Daemon(object):
         """
 
         if self.verbose >= 1:
-            print "Stopping..."
+            print("Stopping...")
 
         # Get the pid from the pidfile
         pid = self.get_pid()
@@ -168,17 +168,17 @@ class Daemon(object):
                 i = i + 1
                 if i % 10 == 0:
                     os.kill(pid, signal.SIGHUP)
-        except OSError, err:
+        except OSError as err:
             err = str(err)
             if err.find("No such process") > 0:
                 if os.path.exists(self.pidfile):
                     os.remove(self.pidfile)
             else:
-                print str(err)
+                print(str(err))
                 sys.exit(1)
 
         if self.verbose >= 1:
-            print "Stopped"
+            print("Stopped")
 
     def restart(self):
         """
