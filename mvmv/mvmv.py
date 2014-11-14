@@ -43,7 +43,7 @@ def search(query, cursor):
             break
 
     cursor.execute("SELECT * FROM movies WHERE movies MATCH ?",
-            ["%s %s" % (word, year)])
+                   ["%s %s" % (word, year)])
 
     ratio = 0
     best = query.replace(year, "").strip()
@@ -60,18 +60,22 @@ def search(query, cursor):
             best = item[0]
     return best
 
-def get_movies_list(dirname, *excludes):
-    excludes = [re.compile(exc) for exc in excludes]
+
+def is_valid_file(filename, excludes):
+    return str(mimetypes.guess_type(filename)[0]).find('video/') == 0 and \
+           not any(map(lambda x: bool(x.match(filename)), excludes))
+
+
+def get_movies_list(dirname, excludes=None):
+    if excludes is None:
+        excludes = []
 
     movies = []
     for root, _, files in os.walk(dirname):
         if any(map(lambda x: x.match(root), excludes)):
             continue
 
-        for movie in files:
-            if str(mimetypes.guess_type(movie)[0]).find('video/') == 0 and \
-                    not any(map(lambda x: x.match(movie), excludes)):
-                movies.append((root, movie))
+        movies += [(root, mov) for mov in files if is_valid_file(mov, excludes)]
     return movies
 
 if __name__ == "__main__":
