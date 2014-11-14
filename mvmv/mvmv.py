@@ -1,8 +1,8 @@
-import os
 import codecs
-import sqlite3
-import re
 import mimetypes
+import os
+import re
+import sqlite3
 from fuzzywuzzy import fuzz
 
 # common words in movies that we don't want to search the database for
