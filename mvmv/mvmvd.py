@@ -8,7 +8,7 @@ class MyHandler(FileSystemEventHandler):
     def on_modified(self, event):
         print("modified") # mv code here
 
-class mvmv(Daemon):
+class mvmvd(Daemon):
     def run(self):
         self.observer = Observer()
         self.monitors = []
@@ -42,5 +42,5 @@ class mvmv(Daemon):
         return event_handler
 
 if __name__ == "__main__":
-    mv = mvmv("./mvmvd.pid")
+    mv = mvmvd("./mvmvd.pid")
     mv.start()
