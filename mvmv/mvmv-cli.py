@@ -2,10 +2,12 @@
 from os import path
 import sys
 import sqlite3
-import mvmv
 import random
 import argparse
 import re
+
+import mvmv
+import mvmvd
 
 
 def get_db_loc():
@@ -17,11 +19,11 @@ def get_parser():
     usage_str = "%(prog)s [OPTIONS] [-r] [-w] [-d] DIRECTORY [DIRECTORY ...]"
     parser = argparse.ArgumentParser(usage=usage_str)
 
-    parser.add_argument("-f", "--file", dest="filename", metavar="FILE",
+    parser.add_argument("-f", "--file", dest="files", metavar="FILE",
                         type=str, nargs='*', default=[],
                         help="Rename this FILE")
 
-    parser.add_argument("-d", "--dir", dest="dirname", metavar="DIR",
+    parser.add_argument("-d", "--dir", dest="dirs", metavar="DIR",
                         type=str, nargs='*', default=[],
                         help="Rename all files in this DIRECTORY")
 
@@ -62,8 +64,12 @@ def get_parser():
 
     # TODO(pbhandari): default db path should be sane.
     parser.add_argument("-p", "--dbpath", dest="dbpath", nargs='?',
-                         metavar="PATH", type=str, default="movies.db",
+                        metavar="PATH", type=str, default="movies.db",
                         help="Alternate path for the database of movies.")
+
+    parser.add_argument("--pidfile", dest="pidfile", nargs=1,
+                        metavar="FILE", type=str, default="./mvmv.pid",
+                        help="The file where the pid is stored for the daemon")
 
     parser.add_argument('args', nargs=argparse.REMAINDER)
     return parser
@@ -76,9 +82,14 @@ if __name__ == '__main__':
     cursor = conn.cursor()
     args.excludes = [re.compile(a) for a in args.excludes]
 
+    # TODO(wmak): Mark the given directories as watched
+    # TODO(wmak): Change this line into a call to the mvmvd executable
+    if args.watch:
+        mvmvd.mvmvd(args.pidfile).start()
+
     # TODO(pbhandari): Code is ugly and stupid
     renames = []
-    for query in args.args + args.filename + args.dirname:
+    for query in args.args + args.files + args.dirs:
         movies = []
         if path.isdir(query):
             movies = mvmv.get_movies_list(path.abspath(query), args.excludes)
