@@ -22,54 +22,52 @@ def get_parser():
     parser.add_argument("-f", "--file", dest="files", metavar="FILE",
                         type=str, nargs='*', default=[],
                         help="Rename this FILE")
-
     parser.add_argument("-d", "--dir", dest="dirs", metavar="DIR",
                         type=str, nargs='*', default=[],
                         help="Rename all files in this DIRECTORY")
-
-    # FIXME(pbhandari): doesn't work properly
     parser.add_argument("-e", "--excludes", dest="excludes", metavar="REGEX",
                         type=str, nargs='*', default=[],
                         help="Rename all files in this DIRECTORY")
 
     parser.add_argument("-r", "-R", "--recursive", action="store_true",
                         dest="recursive", default=False,
-                        help="Recursively scan the directories for files.",)
-
+                        help="Recursively scan the directories for files." +
+                             "(Unsupported)",)
     parser.add_argument("-m", "--max-depth", dest="depth", metavar="DEPTH",
                         default=None, type=int, nargs='?',
-                        help="Recursively scan the directories for files.",)
+                        help="Recursively scan the directories for files." +
+                             "(Unsupported)",)
 
     parser.add_argument("-g", "--gui", action="store_true", dest="start_gui",
                         default=False,
-                        help="Start the program as a GUI.")
+                        help="Start the program as a GUI." + "(Unsupported)")
     parser.add_argument("-w", "--watch", action="store_true", dest="watch",
                         default=False,
                         help="Watch the given directories for new files")
+    parser.add_argument("--pidfile", dest="pidfile", nargs=1,
+                        metavar="FILE", type=str, default="./mvmv.pid",
+                        help="The file where the pid is stored for the daemon")
 
     parser.add_argument("-v", "--verbose", dest="verbose", action="store_true",
                         default=False,
-                        help="Be more verbose.")
+                        help="Be more verbose." + "(Unsupported)")
     parser.add_argument("-q", "--quiet", dest="quiet", action="store_true",
                         default=False,
-                        help="Only output errors.")
+                        help="Only output errors." + "(Unsupported)")
 
     parser.add_argument("-y", "--always-yes", dest="always_yes",
                         action="store_true", default=False,
-                        help="Assume yes for every prompt")
+                        help="Assume yes for every prompt." + "(Unsupported)")
 
     parser.add_argument("-u", "--updatedb", dest="remotedb", default=None,
                         metavar="PATH", type=str, nargs='?',
-                        help="Update the movies list from the given DBPATH.")
+                        help="Update the movies list from the given DBPATH." +
+                             "(Unsupported)")
 
     # TODO(pbhandari): default db path should be sane.
     parser.add_argument("-p", "--dbpath", dest="dbpath", nargs='?',
                         metavar="PATH", type=str, default="movies.db",
                         help="Alternate path for the database of movies.")
-
-    parser.add_argument("--pidfile", dest="pidfile", nargs=1,
-                        metavar="FILE", type=str, default="./mvmv.pid",
-                        help="The file where the pid is stored for the daemon")
 
     parser.add_argument('args', nargs=argparse.REMAINDER)
     return parser
