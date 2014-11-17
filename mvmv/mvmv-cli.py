@@ -5,14 +5,31 @@ import sqlite3
 import random
 import argparse
 import re
+import urllib.request
+import gzip
 
 import mvmv
 import mvmvd
+import parse
 
+class DownloadDB(argparse.Action):
+    def __init__(self, option_strings, dest, nargs=None, **kwargs):
+        super(DownloadDB, self).__init__(option_strings, dest, nargs, **kwargs)
 
-def get_db_loc():
-    dbs = ['a', 'b', 'c']
-    return random.choice(dbs)
+    def __call__(self, parser, namespace, values, option_string=None):
+        movie_list_name = "movies.list"
+        list_url = "ftp://ftp.fu-berlin.de/pub/misc/movies/database/movies.list.gz"
+
+        print("Downloading ...", end="", flush=True)
+        urllib.request.urlretrieve(list_url, movie_list_name + ".gz")
+        print("Done")
+
+        print("Adding to table ...", end="", flush=True)
+        with open(movie_list_name, 'wb') as movie_list:
+            with gzip.open(movie_list_name + ".gz", 'rb') as decompressed:
+                movie_list.write(decompressed.read())
+        parse.create_table(movie_list_name, "movie.db")
+        print("Done.")
 
 
 def get_parser():
@@ -61,8 +78,9 @@ def get_parser():
 
     parser.add_argument("-u", "--updatedb", dest="remotedb", default=None,
                         metavar="PATH", type=str, nargs='?',
+                        action=DownloadDB,
                         help="Update the movies list from the given DBPATH." +
-                             "(Unsupported)")
+                             "(Unsupported custom DBPATH)")
 
     # TODO(pbhandari): default db path should be sane.
     parser.add_argument("-p", "--dbpath", dest="dbpath", nargs='?',
@@ -96,6 +114,6 @@ if __name__ == '__main__':
 
         renames += [(m[0], m[1], mvmv.search(m[1], cursor)) for m in movies]
 
-    print(renames)
+    print(renames) # move the files.
 
     conn.close()
