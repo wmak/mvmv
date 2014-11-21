@@ -84,12 +84,14 @@ def get_movies_list(dirname, excludes=None):
     return movies
 
 def movemovie(src, dst, cursor):
-    _, filename = os.path.split(src)
-    filename, extension = os.path.splitext(filename)
-    os.rename(src, "%s/%s%s" % (dst, search(filename, cursor), extension))
+    filename, extension = os.path.splitext(src[1])
+    os.rename(os.path.join(src[0]. src[1]),
+            "%s/%s%s" % (dst, search(filename, cursor),
+            extension))
 
-def movemovies(dirname):
-    pass
+def movemovies(dirname, dst, cursor):
+    for movie in get_movies_list(dirname):
+        movemovie(movie, dst, cursor)
 
 if __name__ == "__main__":
     conn = sqlite3.connect("movies.db")
