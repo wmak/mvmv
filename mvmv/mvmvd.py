@@ -1,18 +1,34 @@
 from daemon import Daemon
 from watchdog.events import FileSystemEventHandler
 from watchdog.observers import Observer
+import mvmv
+import os
 import socket
+import sqlite3
 import time
 
-class MyHandler(FileSystemEventHandler):
+class MvmvHandler(FileSystemEventHandler):
+    def __init__(self, dest, cursor):
+        self.lock = False
+        self.dest = dest
+        self.cursor = cursor
+
     def on_modified(self, event):
-        print("modified") # mv code here
+        if event.is_directory:
+            if not self.lock:
+                self.lock = True
+                print("moving...")
+                mvmv.movemovies(event.src_path, self.dest, self.cursor)
+                self.lock = False
 
 class mvmvd(Daemon):
     def run(self):
         self.observer = Observer()
         self.monitors = []
         self.dirs = []
+        self.dest = ""
+        conn = sqlite3.connect("movies.db")
+        self.cursor = conn.cursor()
         self.observer.start()
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.bind(("", 4242))
@@ -37,10 +53,10 @@ class mvmvd(Daemon):
                 conn.close()
 
     def new_monitor(self, path, recursive):
-        event_handler = MyHandler()
+        event_handler = MvmvHandler(self.dest, self.cursor)
         self.observer.schedule(event_handler, path, recursive=recursive)
         return event_handler
 
 if __name__ == "__main__":
     mv = mvmvd("./mvmvd.pid")
-    mv.start()
+    mv.run()
