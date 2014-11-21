@@ -11,7 +11,6 @@ setup(
     author_email = "william@wmak.io, pbhandari@pbhandari.ca, hello@olanmatt.com",
     url = "https://github.com/wmak/mvmv",
 
-
     description = "Movie Mover - move your movies where they belong.",
     long_description = readme,
     license = 'MIT',
