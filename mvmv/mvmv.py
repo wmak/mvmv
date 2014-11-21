@@ -33,7 +33,9 @@ def search(query, cursor):
     query = query.replace(".", " ")
     query = bl_re.sub("", query)
 
-    year = re.search("(19|20)\d{2}", query).group(0)
+    year = re.search("(19|20)\d{2}", query)
+    if year:
+        year = year.group(0)
 
     # Find the first relevant word
     word = ""
@@ -46,7 +48,10 @@ def search(query, cursor):
                    ["%s %s" % (word, year)])
 
     ratio = 0
-    best = query.replace(year, "").strip()
+    best = query
+    if year:
+        best = best.replace(year, "")
+    best = best.strip()
     for item in cursor:
         current = fuzz.ratio(item[0], query)
         for word in item[0].split():
@@ -78,11 +83,19 @@ def get_movies_list(dirname, excludes=None):
         movies += [(root, mov) for mov in files if is_valid_file(mov, excludes)]
     return movies
 
+def movemovie(src, dst, cursor):
+    _, filename = os.path.split(src)
+    filename, extension = os.path.splitext(filename)
+    os.rename(src, "%s/%s%s" % (dst, search(filename, cursor), extension))
+
+def movemovies(dirname):
+    pass
+
 if __name__ == "__main__":
     conn = sqlite3.connect("movies.db")
     cursor = conn.cursor()
 
     import sys
-    print(search(sys.argv[0]))
+    print(search(sys.argv[1], cursor))
 
     conn.close()
