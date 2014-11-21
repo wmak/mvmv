@@ -7,10 +7,9 @@ setup(
     name = "mvmv",
     version = "0.1",
 
-    author = "William Mak",
+    author = "William Mak, Prajjwal Bhandari, Matt Olan",
     author_email = "WilliamSYMak@gmail.com",
     url = "https://github.com/wmak/mvmv",
-
 
     description = "Movie Mover - move your movies where they belong.",
     long_description = readme,
