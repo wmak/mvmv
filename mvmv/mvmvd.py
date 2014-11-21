@@ -22,16 +22,36 @@ class MvmvHandler(FileSystemEventHandler):
                 self.lock = False
 
 class mvmvd(Daemon):
-    def run(self):
+    def __init__(self, pidfile, port=4242, destination="", dirs=None):
+        # Run the original Daemon code
+        Daemon.__init__(self, pidfile)
+
+        # Create and start the observer
         self.observer = Observer()
-        self.monitors = []
-        self.dirs = []
-        self.dest = ""
+        self.observer.start()
+
+        # Connect to the movies database
         conn = sqlite3.connect("movies.db")
         self.cursor = conn.cursor()
-        self.observer.start()
+
+        # Initialize the variables
+        self.dirs = []
+        self.monitors = []
+        self.dest = destination
+        self.port = port
+
+        # watch any directories passed in
+        if dirs:
+            for path in dirs:
+                if path.directory not in self.dirs:
+                    self.monitors.append(self.new_monitor(path.directory,
+                        path.recursive))
+                    self.dirs.append(path.directory)
+
+    def run(self):
+        # Listen on port 4242 for any new directories to watch
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.bind(("", 4242))
+        s.bind(("", self.port))
         s.listen(5)
 
         #main execution loop
