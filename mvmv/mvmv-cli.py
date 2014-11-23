@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 from os import path
+
 import sys
 import sqlite3
 import random
@@ -20,16 +21,18 @@ class DownloadDB(argparse.Action):
         movie_list_name = "movies.list"
         list_url = "ftp://ftp.fu-berlin.de/pub/misc/movies/database/movies.list.gz"
 
-        print("Downloading ...", end="", flush=True)
+        sys.stdout.write("Downloading ... ")
+        sys.stdout.flush()
         urllib.request.urlretrieve(list_url, movie_list_name + ".gz")
-        print("Done")
+        sys.stdout.write("Done\n")
 
-        print("Adding to table ...", end="", flush=True)
+        sys.stdout.write("Adding to table ... ")
+        sys.stdout.flush()
         with open(movie_list_name, 'wb') as movie_list:
             with gzip.open(movie_list_name + ".gz", 'rb') as decompressed:
                 movie_list.write(decompressed.read())
         parse.create_table(movie_list_name, "movie.db")
-        print("Done.")
+        sys.stdout.write("Done.\n")
 
 
 def get_parser():
@@ -94,8 +97,9 @@ def get_parser():
     return parser
 
 
-def error(message):
-    print(format(sys.argv[0] + ": error: " + message), file=sys.stderr)
+def error(message, end='\n'):
+    sys.stderr.write(sys.argv[0] + ": error: " + message + end)
+    sys.stderr.flush()
 
 if __name__ == '__main__':
     args = get_parser().parse_args()
