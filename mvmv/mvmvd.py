@@ -55,23 +55,31 @@ class mvmvd(Daemon):
         s.bind(("", self.port))
         s.listen(5)
 
-        #main execution loop
-        while True:
-            conn, addr = s.accept()
-            data = conn.recv(1024)
-            if data:
-                opt = data.split(" ")
-                message = ""
-                if opt[0] == "watch":
-                    if opt[-1] not in self.dirs:
-                        self.monitors.append(self.new_monitor(opt[-1],
-                            "-r" in opt))
-                        self.dirs.append(opt[-1])
-                        message = "added monitor %s" % opt[-1]
-                    else:
-                        message = "directory already being monitored"
-                conn.sendall(message)
-                conn.close()
+        try:
+            #main execution loop
+            while True:
+                conn, addr = s.accept()
+                data = conn.recv(1024)
+                if data:
+                    data = data.decode('utf-8')
+                    opt = data.split(" ")
+                    message = ""
+                    if opt[0] == "watch":
+                        if opt[-1] not in self.dirs:
+                            self.monitors.append(self.new_monitor(opt[-1],
+                                "-r" in opt))
+                            self.dirs.append(opt[-1])
+                            message = "added monitor %s" % opt[-1]
+                        else:
+                            message = "directory already being monitored"
+                    message = message.encode('utf-8')
+                    conn.sendall(message)
+                    conn.close()
+        except Exception as e:
+            # regardless of error close the socket
+            print(e)
+            s.shutdown(socket.SHUT_RDWR)
+            s.close()
 
     def new_monitor(self, path, recursive):
         event_handler = MvmvHandler(self.dest, self.cursor)
