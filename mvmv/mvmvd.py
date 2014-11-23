@@ -13,16 +13,17 @@ class MvmvHandler(FileSystemEventHandler):
         self.dest = dest
         self.cursor = cursor
 
-    def on_modified(self, event):
-        if event.is_directory:
-            if not self.lock:
-                self.lock = True
-                print("moving...")
-                mvmv.movemovies(event.src_path, self.dest, self.cursor)
-                self.lock = False
+    def on_created(self, event):
+        if not self.lock:
+            self.lock = True
+            print("moving...")
+            mvmv.movemovies(event.src_path, self.dest, self.cursor)
+            self.lock = False
 
 class mvmvd(Daemon):
-    def __init__(self, pidfile, port=4242, destination="", dirs=None):
+    def __init__(self, pidfile, port=4242, destination="", dirs=None,
+            recursive=False):
+
         # Run the original Daemon code
         Daemon.__init__(self, pidfile)
 
@@ -43,10 +44,10 @@ class mvmvd(Daemon):
         # watch any directories passed in
         if dirs:
             for path in dirs:
-                if path.directory not in self.dirs:
+                if path not in self.dirs:
                     self.monitors.append(self.new_monitor(path.directory,
-                        path.recursive))
-                    self.dirs.append(path.directory)
+                        recursive))
+                    self.dirs.append(path)
 
     def run(self):
         # Listen on port 4242 for any new directories to watch
