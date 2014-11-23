@@ -6,7 +6,6 @@ import sqlite3
 import random
 import argparse
 import re
-import urllib.request
 import gzip
 
 import mvmv
@@ -23,7 +22,12 @@ class DownloadDB(argparse.Action):
 
         sys.stdout.write("Downloading ... ")
         sys.stdout.flush()
-        urllib.request.urlretrieve(list_url, movie_list_name + ".gz")
+        if sys.version_info >= (3, 0):
+            import urllib.request
+            urllib.request.urlretrieve(list_url, movie_list_name + ".gz")
+        else:
+            import urllib
+            urllib.urlretrieve(list_url, movie_list_name + ".gz")
         sys.stdout.write("Done\n")
 
         sys.stdout.write("Adding to table ... ")
