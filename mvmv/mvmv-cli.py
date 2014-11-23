@@ -94,8 +94,27 @@ def get_parser():
     return parser
 
 
+def error(message):
+    print(format(sys.argv[0] + ": error: " + message), file=sys.stderr)
+
 if __name__ == '__main__':
     args = get_parser().parse_args()
+
+    args.files = [f for f in args.files if mvmv.is_valid_file(f, args.excludes)]
+    args.srcdirs = [d for d in args.files if path.isdir(f, args.excludes)]
+
+    for arg in args.args:
+        if path.isdir(arg):
+            args.srcdirs.append(arg)
+        elif mvmv.is_valid_file(arg):
+            args.files.append(arg)
+
+    if not path.isdir(args.destdir[0]):
+        error("'%s' is not a directory." % args.destdir[0])
+        sys.exit(1)
+    if not args.srcdirs and not args.files:
+        error("You must specify a directory or filename in the commandline.")
+        sys.exit(1)
 
     conn = sqlite3.connect(args.dbpath)
     cursor = conn.cursor()
@@ -108,15 +127,15 @@ if __name__ == '__main__':
 
     # TODO(pbhandari): Code is ugly and stupid
     renames = []
-    for query in args.args + args.files + args.srcdirs:
-        movies = []
-        if path.isdir(query):
-            movies = mvmv.get_movies_list(path.abspath(query), args.excludes)
-        elif mvmv.is_valid_file(query, args.excludes):
-            movies = [(path.dirname(path.abspath(query)), path.basename(query))]
 
-        renames += [(m[0], m[1], mvmv.search(m[1], cursor)) for m in movies]
+    for query in args.files:
+        dirn, movie = path.dirname(path.abspath(query)), path.basename(query)
+        renames.append((dirn, movie, mvmv.search(movie, cursor)))
 
-    print(renames) # move the files.
+    for query in args.srcdirs:
+        for movie in mvmv.get_movies_list(path.abspath(query), args.excludes):
+            renames.append((movie[0], movie[1], mvmv.search(movie[1], cursor)))
+
+    print(renames)  # move the files.
 
     conn.close()
