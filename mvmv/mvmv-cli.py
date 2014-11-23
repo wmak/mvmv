@@ -33,15 +33,18 @@ class DownloadDB(argparse.Action):
 
 
 def get_parser():
-    usage_str = "%(prog)s [OPTIONS] [-r] [-w] [-d] DIRECTORY [DIRECTORY ...]"
+    usage_str = "%(prog)s [OPTIONS] [-r] [-w] [-s] DIRECTORY [DIRECTORY ...] -t DESTDIR"
     parser = argparse.ArgumentParser(usage=usage_str)
 
     parser.add_argument("-f", "--file", dest="files", metavar="FILE",
                         type=str, nargs='*', default=[],
                         help="Rename this FILE")
-    parser.add_argument("-d", "--dir", dest="dirs", metavar="DIR",
+    parser.add_argument("-s", "--srcdir", dest="srcdirs", metavar="SRCDIR",
                         type=str, nargs='*', default=[],
                         help="Rename all files in this DIRECTORY")
+    parser.add_argument("-t", "--destdir", dest="destdir", metavar="DESTDIR",
+                        type=str, nargs=1, action='store', required=True,
+                        help="Move all the files to this directory.")
     parser.add_argument("-e", "--excludes", dest="excludes", metavar="REGEX",
                         type=str, nargs='*', default=[],
                         help="Rename all files in this DIRECTORY")
@@ -105,7 +108,7 @@ if __name__ == '__main__':
 
     # TODO(pbhandari): Code is ugly and stupid
     renames = []
-    for query in args.args + args.files + args.dirs:
+    for query in args.args + args.files + args.srcdirs:
         movies = []
         if path.isdir(query):
             movies = mvmv.get_movies_list(path.abspath(query), args.excludes)
