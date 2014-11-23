@@ -101,7 +101,7 @@ if __name__ == '__main__':
     args = get_parser().parse_args()
 
     args.files = [f for f in args.files if mvmv.is_valid_file(f, args.excludes)]
-    args.srcdirs = [d for d in args.files if path.isdir(f, args.excludes)]
+    args.srcdirs = [d for d in args.srcdirs if path.isdir(d)]
 
     for arg in args.args:
         if path.isdir(arg):
