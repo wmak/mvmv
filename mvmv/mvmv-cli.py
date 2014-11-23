@@ -100,12 +100,15 @@ def error(message):
 if __name__ == '__main__':
     args = get_parser().parse_args()
 
-    args.files = [f for f in args.files if mvmv.is_valid_file(f, args.excludes)]
-    args.srcdirs = [d for d in args.srcdirs if path.isdir(d)]
+    args.files = [path.abspath(fname) for fname in args.files
+                  if mvmv.is_valid_file(fname, args.exclude)]
+
+    args.srcdirs = [path.abspath(sdir) for sdir in args.srcdirs
+                    if path.isdir(sdir)]
 
     for arg in args.args:
         if path.isdir(arg):
-            args.srcdirs.append(arg)
+            args.srcdirs.append(path.abspath(arg))
         elif mvmv.is_valid_file(arg):
             args.files.append(arg)
 
@@ -127,11 +130,9 @@ if __name__ == '__main__':
 
     # TODO(pbhandari): Code is ugly and stupid
     for query in args.files:
-        dirn, movie = path.dirname(path.abspath(query)), path.basename(query)
-        mvmv.movemovies((dirn, movie, mvmv.search(movie, cursor)))
+        mvmv.movemovie(path.abspath(query), args.destdir, cursor)
 
-    for query in args.srcdirs:
-        for d, mov in mvmv.get_movies_list(path.abspath(query), args.excludes):
-            mvmv.movemovies((d, mov, mvmv.search(mov, cursor)))
+    for dirname in args.srcdirs:
+        mvmv.movemovies(dirname, args.destdir, cursor, args.excludes)
 
     conn.close()
