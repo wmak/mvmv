@@ -126,16 +126,12 @@ if __name__ == '__main__':
         mvmvd.mvmvd(args.pidfile).start()
 
     # TODO(pbhandari): Code is ugly and stupid
-    renames = []
-
     for query in args.files:
         dirn, movie = path.dirname(path.abspath(query)), path.basename(query)
-        renames.append((dirn, movie, mvmv.search(movie, cursor)))
+        mvmv.movemovies((dirn, movie, mvmv.search(movie, cursor)))
 
     for query in args.srcdirs:
-        for movie in mvmv.get_movies_list(path.abspath(query), args.excludes):
-            renames.append((movie[0], movie[1], mvmv.search(movie[1], cursor)))
-
-    print(renames)  # move the files.
+        for d, mov in mvmv.get_movies_list(path.abspath(query), args.excludes):
+            mvmv.movemovies((d, mov, mvmv.search(mov, cursor)))
 
     conn.close()
