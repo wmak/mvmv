@@ -89,8 +89,8 @@ def movemovie(src, dst, cursor):
             "%s/%s%s" % (dst, search(filename, cursor),
             extension))
 
-def movemovies(dirname, dst, cursor):
-    for movie in get_movies_list(dirname):
+def movemovies(dirname, dst, cursor, excludes=None):
+    for movie in get_movies_list(dirname, excludes):
         movemovie(movie, dst, cursor)
 
 if __name__ == "__main__":

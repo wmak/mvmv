@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 from os import path
+
 import sys
 import sqlite3
 import random
 import argparse
 import re
-import urllib.request
 import gzip
 
 import mvmv
@@ -20,28 +20,38 @@ class DownloadDB(argparse.Action):
         movie_list_name = "movies.list"
         list_url = "ftp://ftp.fu-berlin.de/pub/misc/movies/database/movies.list.gz"
 
-        print("Downloading ...", end="", flush=True)
-        urllib.request.urlretrieve(list_url, movie_list_name + ".gz")
-        print("Done")
+        sys.stdout.write("Downloading ... ")
+        sys.stdout.flush()
+        if sys.version_info >= (3, 0):
+            import urllib.request
+            urllib.request.urlretrieve(list_url, movie_list_name + ".gz")
+        else:
+            import urllib
+            urllib.urlretrieve(list_url, movie_list_name + ".gz")
+        sys.stdout.write("Done\n")
 
-        print("Adding to table ...", end="", flush=True)
+        sys.stdout.write("Adding to table ... ")
+        sys.stdout.flush()
         with open(movie_list_name, 'wb') as movie_list:
             with gzip.open(movie_list_name + ".gz", 'rb') as decompressed:
                 movie_list.write(decompressed.read())
         parse.create_table(movie_list_name, "movie.db")
-        print("Done.")
+        sys.stdout.write("Done.\n")
 
 
 def get_parser():
-    usage_str = "%(prog)s [OPTIONS] [-r] [-w] [-d] DIRECTORY [DIRECTORY ...]"
+    usage_str = "%(prog)s [OPTIONS] [-r] [-w] [-s] DIRECTORY [DIRECTORY ...] -t DESTDIR"
     parser = argparse.ArgumentParser(usage=usage_str)
 
     parser.add_argument("-f", "--file", dest="files", metavar="FILE",
                         type=str, nargs='*', default=[],
                         help="Rename this FILE")
-    parser.add_argument("-d", "--dir", dest="dirs", metavar="DIR",
+    parser.add_argument("-s", "--srcdir", dest="srcdirs", metavar="SRCDIR",
                         type=str, nargs='*', default=[],
                         help="Rename all files in this DIRECTORY")
+    parser.add_argument("-t", "--destdir", dest="destdir", metavar="DESTDIR",
+                        type=str, nargs=1, action='store', required=True,
+                        help="Move all the files to this directory.")
     parser.add_argument("-e", "--excludes", dest="excludes", metavar="REGEX",
                         type=str, nargs='*', default=[],
                         help="Rename all files in this DIRECTORY")
@@ -91,8 +101,31 @@ def get_parser():
     return parser
 
 
+def error(message, end='\n'):
+    sys.stderr.write(sys.argv[0] + ": error: " + message + end)
+    sys.stderr.flush()
+
 if __name__ == '__main__':
     args = get_parser().parse_args()
+
+    args.files = [path.abspath(fname) for fname in args.files
+                  if mvmv.is_valid_file(fname, args.exclude)]
+
+    args.srcdirs = [path.abspath(sdir) for sdir in args.srcdirs
+                    if path.isdir(sdir)]
+
+    for arg in args.args:
+        if path.isdir(arg):
+            args.srcdirs.append(path.abspath(arg))
+        elif mvmv.is_valid_file(arg):
+            args.files.append(arg)
+
+    if not path.isdir(args.destdir[0]):
+        error("'%s' is not a directory." % args.destdir[0])
+        sys.exit(1)
+    if not args.srcdirs and not args.files:
+        error("You must specify a directory or filename in the commandline.")
+        sys.exit(1)
 
     conn = sqlite3.connect(args.dbpath)
     cursor = conn.cursor()
@@ -104,16 +137,10 @@ if __name__ == '__main__':
         mvmvd.mvmvd(args.pidfile).start()
 
     # TODO(pbhandari): Code is ugly and stupid
-    renames = []
-    for query in args.args + args.files + args.dirs:
-        movies = []
-        if path.isdir(query):
-            movies = mvmv.get_movies_list(path.abspath(query), args.excludes)
-        elif mvmv.is_valid_file(query, args.excludes):
-            movies = [(path.dirname(path.abspath(query)), path.basename(query))]
+    for query in args.files:
+        mvmv.movemovie(path.abspath(query), args.destdir, cursor)
 
-        renames += [(m[0], m[1], mvmv.search(m[1], cursor)) for m in movies]
-
-    print(renames) # move the files.
+    for dirname in args.srcdirs:
+        mvmv.movemovies(dirname, args.destdir, cursor, args.excludes)
 
     conn.close()
