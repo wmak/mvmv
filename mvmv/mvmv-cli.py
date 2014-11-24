@@ -105,6 +105,7 @@ def error(message, end='\n'):
     sys.stderr.write(sys.argv[0] + ": error: " + message + end)
     sys.stderr.flush()
 
+# TODO(pbhandari): Code is ugly and stupid.
 if __name__ == '__main__':
     args = get_parser().parse_args()
 
@@ -113,6 +114,8 @@ if __name__ == '__main__':
 
     args.srcdirs = [path.abspath(sdir) for sdir in args.srcdirs
                     if path.isdir(sdir)]
+
+    args.destdir = path.abspath(args.destdir[0])
 
     for arg in args.args:
         if path.isdir(arg):
@@ -131,12 +134,12 @@ if __name__ == '__main__':
     cursor = conn.cursor()
     args.excludes = [re.compile(a) for a in args.excludes]
 
-    # TODO(wmak): Mark the given directories as watched
-    # TODO(wmak): Change this line into a call to the mvmvd executable
     if args.watch:
-        mvmvd.mvmvd(args.pidfile).start()
+        mvmvd.mvmvd(args.pidfile, 
+                dirs=args.srcdirs, 
+                dest=args.destdir,
+                recursive=args.recursive).start()
 
-    # TODO(pbhandari): Code is ugly and stupid
     for query in args.files:
         mvmv.movemovie(path.abspath(query), args.destdir, cursor)
 

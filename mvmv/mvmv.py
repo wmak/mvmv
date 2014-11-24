@@ -85,7 +85,7 @@ def get_movies_list(dirname, excludes=None):
 
 def movemovie(src, dst, cursor):
     filename, extension = os.path.splitext(src[1])
-    os.rename(os.path.join(src[0]. src[1]),
+    os.rename(os.path.join(src[0], src[1]),
             "%s/%s%s" % (dst, search(filename, cursor),
             extension))
 
