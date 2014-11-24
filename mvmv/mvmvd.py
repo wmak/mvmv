@@ -21,7 +21,7 @@ class MvmvHandler(FileSystemEventHandler):
             self.lock = False
 
 class mvmvd(Daemon):
-    def __init__(self, pidfile, port=4242, destination="", dirs=None,
+    def __init__(self, pidfile, port=4242, dest="", dirs=None,
             recursive=False):
 
         # Run the original Daemon code
@@ -60,21 +60,26 @@ class mvmvd(Daemon):
             while True:
                 conn, addr = s.accept()
                 data = conn.recv(1024)
-                if data:
-                    data = data.decode('utf-8')
-                    opt = data.split(" ")
-                    message = ""
-                    if opt[0] == "watch":
-                        if opt[-1] not in self.dirs:
-                            self.monitors.append(self.new_monitor(opt[-1],
-                                "-r" in opt))
-                            self.dirs.append(opt[-1])
-                            message = "added monitor %s" % opt[-1]
-                        else:
-                            message = "directory already being monitored"
-                    message = message.encode('utf-8')
-                    conn.sendall(message)
-                    conn.close()
+                if not data:
+                    continue
+
+                data = data.decode('utf-8')
+                opt = data.split(" ")
+                message = ""
+
+                # Arg parsing #TODO(wmak): do this properly.
+                if opt[0] == "watch":
+                    if opt[-1] not in self.dirs:
+                        self.monitors.append(self.new_monitor(opt[-1],
+                            "-r" in opt))
+                        self.dirs.append(opt[-1])
+                        message = "added monitor %s" % opt[-1]
+                    else:
+                        message = "directory already being monitored"
+
+                message = message.encode('utf-8')
+                conn.sendall(message)
+                conn.close()
         except Exception as e:
             # regardless of error close the socket
             print(e)
