@@ -68,11 +68,15 @@ def get_parser():
     parser.add_argument("-g", "--gui", action="store_true", dest="start_gui",
                         default=False,
                         help="Start the program as a GUI." + "(Unsupported)")
+
     parser.add_argument("-w", "--watch", action="store_true", dest="watch",
                         default=False,
                         help="Watch the given directories for new files")
+    parser.add_argument("--stop", action="store_true", dest="stop_daemon",
+                        default=False,
+                        help="Stop the daemon.")
     parser.add_argument("--pidfile", dest="pidfile", nargs=1,
-                        metavar="FILE", type=str, default="./mvmv.pid",
+                        metavar="FILE", type=str, default="./mvmvd.pid",
                         help="The file where the pid is stored for the daemon")
 
     parser.add_argument("-v", "--verbose", dest="verbose", action="store_true",
@@ -134,9 +138,12 @@ if __name__ == '__main__':
     cursor = conn.cursor()
     args.excludes = [re.compile(a) for a in args.excludes]
 
+    if args.stop_daemon:
+        mvmvd.mvmvd(args.pidfile).stop()
+
     if args.watch:
-        mvmvd.mvmvd(args.pidfile, 
-                dirs=args.srcdirs, 
+        mvmvd.mvmvd(args.pidfile,
+                dirs=args.srcdirs,
                 dest=args.destdir,
                 recursive=args.recursive).start()
 
