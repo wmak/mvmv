@@ -5,7 +5,7 @@ with open('README.rst') as f:
 
 setup(
     name = "mvmv",
-    version = "0.1",
+    version = "1.1",
 
     author = "William Mak, Prajjwal Bhandari, Matt Olan",
     author_email = "william@wmak.io, pbhandari@pbhandari.ca, hello@olanmatt.com",
