@@ -8,9 +8,9 @@ import argparse
 import re
 import gzip
 
-import mvmv
-import mvmvd
-import parse
+import mvmv.mvmv as mvmv
+import mvmv.mvmvd as mvmvd
+import mvmv.parse as parse
 
 class DownloadDB(argparse.Action):
     def __init__(self, option_strings, dest, nargs=None, **kwargs):
@@ -98,7 +98,7 @@ def get_parser():
 
     # TODO(pbhandari): default db path should be sane.
     parser.add_argument("-p", "--dbpath", dest="dbpath", nargs='?',
-                        metavar="PATH", type=str, default="movies.db",
+                        metavar="PATH", type=str, default="movie.db",
                         help="Alternate path for the database of movies.")
 
     parser.add_argument('args', nargs=argparse.REMAINDER)
@@ -109,12 +109,11 @@ def error(message, end='\n'):
     sys.stderr.write(sys.argv[0] + ": error: " + message + end)
     sys.stderr.flush()
 
-# TODO(pbhandari): Code is ugly and stupid.
-if __name__ == '__main__':
+def main():
     args = get_parser().parse_args()
 
     args.files = [path.abspath(fname) for fname in args.files
-                  if mvmv.is_valid_file(fname, args.exclude)]
+                  if mvmv.is_valid_file(fname, args.excludes)]
 
     args.srcdirs = [path.abspath(sdir) for sdir in args.srcdirs
                     if path.isdir(sdir)]
@@ -148,9 +147,13 @@ if __name__ == '__main__':
                 recursive=args.recursive).start()
 
     for query in args.files:
-        mvmv.movemovie(path.abspath(query), args.destdir, cursor)
+        mvmv.movemovie(path.split(path.abspath(query)), args.destdir, cursor)
 
     for dirname in args.srcdirs:
         mvmv.movemovies(dirname, args.destdir, cursor, args.excludes)
 
     conn.close()
+
+# TODO(pbhandari): Code is ugly and stupid.
+if __name__ == '__main__':
+    main()

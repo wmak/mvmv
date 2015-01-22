@@ -1,7 +1,7 @@
-from daemon import Daemon
+from mvmv.daemon import Daemon
 from watchdog.events import FileSystemEventHandler
 from watchdog.observers import Observer
-import mvmv
+import mvmv.mvmv as mvmv
 import os
 import socket
 import sqlite3
@@ -17,12 +17,17 @@ class MvmvHandler(FileSystemEventHandler):
         if not self.lock:
             self.lock = True
             print("moving...")
+            print(self.dest)
             mvmv.movemovies(event.src_path, self.dest, self.cursor)
             self.lock = False
 
 class mvmvd(Daemon):
-    def __init__(self, pidfile, port=4242, dest="", dirs=None,
-            recursive=False):
+    def __init__(self,
+                 pidfile,
+                 port=4242,
+                 dest="",
+                 dirs=None,
+                 recursive=False):
 
         # Run the original Daemon code
         Daemon.__init__(self, pidfile)
@@ -38,7 +43,7 @@ class mvmvd(Daemon):
         # Initialize the variables
         self.dirs = []
         self.monitors = []
-        self.dest = destination
+        self.dest = dest
         self.port = port
 
         # watch any directories passed in

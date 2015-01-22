@@ -17,6 +17,11 @@ setup(
 
     packages = find_packages(exclude=['*.tests']),
     test_suite = "mvmv.tests",
+    entry_points={
+        "console_scripts": [
+            "mvmv = mvmv.cli:main"
+        ],
+    },
     install_requires = [
         "fuzzywuzzy >= 0.4.0",
         "python-Levenshtein >= 0.11.2",
